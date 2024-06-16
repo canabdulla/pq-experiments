@@ -47,7 +47,7 @@ wget ftp://ftp.irisa.fr/local/texmex/corpus/sift.tar.gz
 tar -xf sift.tar.gz data/distortion/sift
 python3 fvecs_to_hdf5.py "data/distortion/sift/sift_base.fvecs" "data/distortion/sift_base_100k.hdf5" 100000
 
-#GIST1M
-wget ftp://ftp.irisa.fr/local/texmex/corpus/gist.tar.gz
-tar -xf gist.tar.gz data/distortion/gist
-python3 fvecs_to_hdf5.py "data/distortion/gist/gist_base.fvecs" "data/distortion/gist_base_100k.hdf5" 100000
+##GIST1M
+#wget ftp://ftp.irisa.fr/local/texmex/corpus/gist.tar.gz
+#tar -xf gist.tar.gz data/distortion/gist
+#python3 fvecs_to_hdf5.py "data/distortion/gist/gist_base.fvecs" "data/distortion/gist_base_100k.hdf5" 100000
