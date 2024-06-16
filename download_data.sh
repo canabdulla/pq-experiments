@@ -8,6 +8,19 @@
 mkdir -p data;
 chmod 755 data;
 
+mkdir -p ./data/ann
+mkdir -p ./data/distortion
+mkdir -p ./data/ml
+
+mkdir -p ./output/distortion
+mkdir -p ./output/ml
+
+mkdir -p ./results/distortion
+mkdir -p ./results/ml
+
+mkdir -p ./perf_output/ml
+mkdir -p ./perf_output/distortion
+
 # Adult
 curl https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data -o data/ml/Adult.csv;
 sed -i '$d' data/ml/Adult.csv; # fix empty line at end of file
