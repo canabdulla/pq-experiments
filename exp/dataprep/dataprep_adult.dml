@@ -1,0 +1,36 @@
+#source: https://github.com/damslab/reproducibility/tree/master/sigmod2021-sliceline-p218/exp/dataprep
+
+Forig = read("./data/ml/Adult.csv", data_type="frame", format="csv", header=FALSE);
+
+F = Forig;
+
+# data preparation
+
+jspec= "{ ids:true, recode:[2,4,6,7,8,9,10,14,15], bin:["
++"{id:1, method:equi-width, numbins:10},"
++"{id:3, method:equi-width, numbins:10},"
++"{id:5, method:equi-width, numbins:10},"
++"{id:11, method:equi-width, numbins:10},"
++"{id:12, method:equi-width, numbins:10},"
++"{id:13, method:equi-width, numbins:10}]}"
+
+#jspec2= "{ ids:true, recode:[2,4,6,7,8,9,10,14,15], dummy:[2,4,6,7,8,9,10,14,15]}"
+jspec2= "{ ids:true, recode:[2,4,6,7,8,9,10,14,15], bin:["
++"{id:1, method:equi-width, numbins:10},"
++"{id:3, method:equi-width, numbins:10},"
++"{id:5, method:equi-width, numbins:10},"
++"{id:11, method:equi-width, numbins:10},"
++"{id:12, method:equi-width, numbins:10},"
++"{id:13, method:equi-width, numbins:10}]}"
+
+
+[X,M] = transformencode(target=F, spec=jspec2);
+
+y = X[,ncol(X)];
+X = X[,2:(ncol(X)-1)]
+print(toString(X))
+
+write(X, "data/ml/Adult_X.csv")
+write(y, "data/ml/Adult_y.csv")
+
+

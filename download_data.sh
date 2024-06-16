@@ -1,15 +1,15 @@
 #!/bin/bash
 
-#source: https://github.com/damslab/reproducibility/blob/master/sigmod2021-sliceline-p218/run3DownloadData.sh
-
-# This script downloads all real datasets shown in Table 1 of the paper
-# The remaining datasets are then created via replicating some of these datasets
+#Part of the code is taken from: https://github.com/damslab/reproducibility/blob/master/sigmod2021-sliceline-p218/run3DownloadData.sh
+#Be sure to install unzip
 
 mkdir -p data;
 chmod 755 data;
 
 mkdir -p ./data/ann
-mkdir -p ./data/distortion
+mkdir -p ./data/distortion/siftsmall
+mkdir -p ./data/distortion/sift
+mkdir -p ./data/distortion/gist
 mkdir -p ./data/ml
 
 mkdir -p ./output/distortion
@@ -39,15 +39,18 @@ sed -i 's/-/ /g' data/ml/KDD98.csv; # fix suffix - at 5th column (numerical)
 
 #SIFT10
 wget ftp://ftp.irisa.fr/local/texmex/corpus/siftsmall.tar.gz
-tar -xf siftsmall.tar.gz data/distortion/siftsmall
-python3 fvecs_to_hdf5.py "data/distortion/siftsmall/siftsmall_base.fvecs" "data/distortion/siftsmall_base.hdf5" 10000
+tar -xf siftsmall.tar.gz siftsmall
+rm siftsmall.tar.gz
+python3 fvecs_to_hdf5.py "siftsmall/siftsmall_base.fvecs" "data/distortion/siftsmall_base.hdf5" 10000
 
 #SIFT1M
 wget ftp://ftp.irisa.fr/local/texmex/corpus/sift.tar.gz
-tar -xf sift.tar.gz data/distortion/sift
-python3 fvecs_to_hdf5.py "data/distortion/sift/sift_base.fvecs" "data/distortion/sift_base_100k.hdf5" 100000
+tar -xf sift.tar.gz sift
+rm sift.tar.gz
+python3 fvecs_to_hdf5.py "sift/sift_base.fvecs" "data/distortion/sift_base_100k.hdf5" 100000
 
 ##GIST1M
 #wget ftp://ftp.irisa.fr/local/texmex/corpus/gist.tar.gz
-#tar -xf gist.tar.gz data/distortion/gist
-#python3 fvecs_to_hdf5.py "data/distortion/gist/gist_base.fvecs" "data/distortion/gist_base_100k.hdf5" 100000
+#tar -xf gist.tar.gz gist
+#rm gist.tar.gz
+#python3 fvecs_to_hdf5.py "gist/gist_base.fvecs" "data/distortion/gist_base_100k.hdf5" 100000

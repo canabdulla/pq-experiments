@@ -9,13 +9,13 @@ sep=TRUE
 run_reg() {
   dataset=$2
   start=$(date +%s%N)
-  sudo perf stat -x \; -o "./perf_output/regression/$1 $dataset $M $centroids $sample_size $sep" -d -d -d \
+  sudo perf stat -x \; -o "./perf_output/ml/$1 $dataset $M $centroids $sample_size $sep" -d -d -d \
    $CMD -f logistic_regression.dml \
    -nvargs dataset="$dataset" M=$M centroids=$centroids pq=$pq sep=$sep \
    -exec singlenode -stats
   end=$(date +%s%N)
   time=$((($end-$start) / 1000000 - 1500))
-  sed -i s/$/,"$time"/ "./output/regression/$1 $dataset $M $centroids 0 $sep"
+  sed -i s/$/,"$time"/ "./output/ml/$1 $dataset $M $centroids 0 $sep"
 }
 
 for M in 1 2 4; do
