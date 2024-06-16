@@ -32,7 +32,7 @@ def plot_distortion(df):
     plt.show()
 
 def main():
-    df = pd.read_hdf('results/regression/test.hdf5', 'data')
+    df = pd.read_hdf('results/ml/test.hdf5', 'data')
     plot_distortion(df)
 
 

@@ -37,5 +37,5 @@ sep=TRUE
 run_reg Baseline Adult
 run_reg Baseline Covtype
 
-rm output/regression/*.mtd
+rm output/ml/*.mtd
 python3 parse_outputs.py  reg

@@ -71,10 +71,10 @@ def main():
         save_hdf5(data, "./results/distortion/test.hdf5")
     elif sys.argv[1] == "reg":
         # perf_data = parse_perf_output("perf_output/regression")
-        data = parse_regr_output("output/regression")
-        perf_data = parse_perf_output("perf_output/regression")
+        data = parse_regr_output("output/ml")
+        perf_data = parse_perf_output("perf_output/ml")
         data.extend(perf_data)
-        save_hdf5(data, "./results/regression/test.hdf5")
+        save_hdf5(data, "./results/ml/test.hdf5")
 
 
 if __name__ == '__main__':
