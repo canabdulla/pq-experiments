@@ -20,7 +20,7 @@ if(pq) {
   [codebook, codes] = quantizeByCluster(v, M, centroids / M, 1, 1000, 1e-8, (sample_size/(centroids/M)), sep, 2)
 }
 else {
-  [codebook, codes] = kmeans(v, centroids, 1, 1000, 1e-8, FALSE, (sample_size/centroids), 2)
+  [codebook, codes] = kmeans(v, centroids, 1, 100, 1e-6, FALSE, (sample_size/centroids), 2)
 }
 
 cols = 128

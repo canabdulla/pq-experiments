@@ -30,7 +30,7 @@ run_perf-l3() {
        -nvargs dataset=$dataset M=$M calc_dist=$calc_dist sample_size=$sample_size centroids=$centroids pq=$pq sep=TRUE
 }
 
-for centroids in 8 16 32 64 128 256 512; do
+for centroids in 8 16 32 64 128 256; do
   #pq
   for M in 1 2 4 8; do
     for sep in FALSE TRUE ; do
