@@ -7,8 +7,7 @@ pq = $pq
 sep = $sep
 
 
-
-v = read("input/" + dataset + ".hdf5", rows=100000, cols=128, format="hdf5")
+v = read("data/distortion/" + dataset + ".hdf5", rows=100000, cols=128, format="hdf5")
 
 if(sample_size < nrow(v)) {
   v = v[1:sample_size,]
@@ -17,12 +16,11 @@ else {
   sample_size = nrow(v)
 }
 
-num_chunks = ncol(v) / M
 if(pq) {
-  [codebook, codes] = quantizeByCluster(v, M, centroids, 1, 1000, 1e-5, (sample_size/centroids), sep, 2)
+  [codebook, codes] = quantizeByCluster(v, M, centroids / M, 1, 1000, 1e-8, (sample_size/(centroids/M)), sep, 2)
 }
 else {
-  [codebook, codes] = kmeans(v, centroids, 1, 1000, 1e-5, FALSE, (sample_size/centroids), 2)
+  [codebook, codes] = kmeans(v, centroids, 1, 1000, 1e-8, FALSE, (sample_size/centroids), 2)
 }
 
 cols = 128
@@ -30,32 +28,33 @@ rows=sample_size
 
 result = matrix(0, rows=rows, cols=cols)
 
+#todo: maybe integer division + throw error
+subv = ncol(v) / M
+
 #construct vectors from codes
 if(pq) {
   if(calc_distortion) {
   parfor (i in 1:nrow(codes), check=0) {
     parfor (j in 1:ncol(codes), check=0) {
-      result[i, 1 + (j-1)* M: j * M] = codebook[as.scalar(codes[i, j])]
+      result[i, 1 + (j-1)* subv: j * subv] = codebook[as.scalar(codes[i, j])]
     }
   }
 }
+
 }
 else {
   parfor(i in 1:nrow(codes), check=0) {
     result[i,] = codebook[as.scalar(codes[i])]
   }
 }
-# print(toString(codes))
-# print(toString(result))
-# print(toString(v))
 
 distortion = colSums(rowSums((v - result)^2)) / rows
 
 if(pq) {
-out_file = "output/pq " + dataset + " " + M + " " + centroids + " " + sample_size + " " + sep
+out_file = "output/distortion/PQ " + dataset + " " + M + " " + centroids + " " + sample_size + " " + sep
 }
 else {
-out_file = "output/kmeans " + dataset + " " + M + " " + centroids + " " + sample_size + " " + sep
+out_file = "output/distortion/K-Means " + dataset + " " + M + " " + centroids + " " + sample_size + " " + sep
 }
 #existing = read(out_file, format="csv")
 #distortion = rbind(existing, distortion)
