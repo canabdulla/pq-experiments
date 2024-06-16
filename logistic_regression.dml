@@ -78,10 +78,10 @@ stats[1,4] = 2 * (avg_precision * avg_recall) / (avg_precision + avg_recall)
 
 sample_size = 0 #nrow(X)
 if(pq) {
-out_file = "output/regression/PQ " + dataset + " " + M + " " + centroids + " " + sample_size + " " + sep
+out_file = "output/ml/PQ " + dataset + " " + M + " " + centroids + " " + sample_size + " " + sep
 }
 else {
-out_file = "output/regression/Baseline " + dataset + " " + M + " " + centroids + " " + sample_size + " " + sep
+out_file = "output/ml/Baseline " + dataset + " " + M + " " + centroids + " " + sample_size + " " + sep
 }
 # print(toString(out_file))
 # print(toString(dataset))
