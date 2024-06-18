@@ -19,16 +19,21 @@ run_reg() {
 }
 
 for M in 1 2 4; do
-  for centroids in 8 16; do
-    for sep in FALSE TRUE; do
-#      centroids=$((c* (16 / M)))
-#      if ((M < 8)); then
+  for centroids in 4 8 16 32 64 128; do
+    for sep in FALSE; do
       run_reg PQ Adult
-#      fi
+    done
+  done
+done
+
+for M in 1 2 4 8; do
+  for centroids in 4 8 16 32 64 128 256; do
+    for sep in FALSE; do
       run_reg PQ Covtype
     done
   done
 done
+
 pq=FALSE
 M=0
 centroids=0
