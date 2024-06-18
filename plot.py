@@ -1,5 +1,6 @@
 import math
 import os
+import sys
 
 import numpy as np
 import pandas as pd
@@ -31,9 +32,33 @@ def plot_distortion(df):
     # plt.savefig(os.path.join("plots", "distortion-s.svg"))
     plt.show()
 
+def plot_ml_dataset(df):
+    fig, ax = plt.subplots()
+    ax.set_ylim(0, 1)
+
+
+
+def plot_ml(df):
+    df["codebook_size"] = df["centroids"] * df["M"]
+    for d in df["dataset"].unique():
+        for m in df["metric"].unique():
+            plot_ml_dataset(df.query(f"dataset == '{d}' and metric == '{m}'"))
+
+
+
+
 def main():
-    df = pd.read_hdf('results/ml/test.hdf5', 'data')
-    plot_distortion(df)
+    if len(sys.argv) < 2:
+        print("Usage: {} <test_case>".format(sys.argv[0]))
+        return 1
+    if sys.argv[1] == "distortion":
+        # df = pd.read_hdf('results/distortion/test.hdf5', 'data')
+        df = pd.read_csv('results/distortion.csv')
+    elif sys.argv[1] == "ml":
+        # df = pd.read_hdf('results/ml/test.hdf5', 'data')
+        df = pd.read_csv('results/ml.csv')
+        plot_ml(df)
+        # plot_distortion(df)
 
 
 if __name__ == '__main__':
