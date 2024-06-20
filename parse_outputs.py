@@ -7,7 +7,7 @@ import pandas as pd
 
 def save_csv(data, dest):
     df = pd.DataFrame(data,
-                      columns=["algorithm", "dataset", "M", "centroids", "sample_size", "separate", 'metric', 'value'])
+                      columns=["algorithm", "dataset", "M", "subcentroids", "sample_size", "separate", 'metric', 'value'])
     df.to_csv(dest, index=False)
 
 def parse_perf_output(output_dir):
@@ -45,8 +45,12 @@ def parse_dist_output(output_dir):
 def parse_regr_output(output_dir):
     data = []
     for filename in os.listdir(output_dir):
+        dataset = filename.split(' ')[1]
+        if dataset == 'KDD98':
+            metrics = ["mse", "ms"]
+        else:
+            metrics = ["accuracy", "avg-precision", "avg-recall", "macro-f1", "ms"]
         val = np.loadtxt(open(os.path.join(output_dir, filename), "rb"), delimiter=",")
-        metrics = ["accuracy", "avg-precision", "avg-recall", "macro-f1", "ms"]
         for i in range(len(val)):
             testcase = os.path.splitext(filename)[0].split()
             testcase.append(metrics[i])
