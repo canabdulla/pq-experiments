@@ -1,13 +1,8 @@
 #!/bin/bash
-#file="input/sift_base_100k.hdf5"
-#dataset=$(echo $file | sed -r "s/.+\/(.+)\..+/\1/")
-dataset="sift_base_100k"
-sample_size=100000
 calc_dist=TRUE
 
-CMD="java -Xmx24g -Xms24g -cp ./lib/*:./SystemDS.jar org.apache.sysds.api.DMLScript "
+CMD="java -Xmx12g -Xms12g -cp ./lib/*:./SystemDS.jar org.apache.sysds.api.DMLScript "
 CONF=" -config exp/dataprep/SystemDS-config.xml" #just for faster training (~7x)
-
 
 sudo rm output/distortion/*
 sudo rm perf_output/distortion/*
@@ -15,37 +10,47 @@ sudo rm perf_output/distortion/*
 run_perf() {
   local pq=${2}
   start=$(date +%s%N)
-  sudo perf stat -x \; -o "./perf_output/distortion/$1 $dataset $M $centroids $sample_size $sep" -d -d -d $CMD -f distortion_test.dml -exec singlenode -stats \
-      -nvargs dataset=$dataset M=$M calc_dist=$calc_dist sample_size=$sample_size centroids=$centroids pq=$pq sep=$sep
+  file="distortion/$1 $dataset $M $subcentroids $sep"
+  sudo perf stat -x \; -o "./perf_output/$file" -d -d -d $CMD -f distortion_test.dml -exec singlenode -stats \
+      -nvargs dataset=$dataset M=$M calc_dist=$calc_dist subcentroids=$subcentroids pq=$pq sep=$sep application=$application
   end=$(date +%s%N)
   time=$((($end-$start) / 1000000 - 1500))
-  sed -i s/$/,"$time"/ "./output/distortion/$1 $dataset $M $centroids $sample_size $sep"
+  if [ ! -f "./output/$file" ]; then
+      echo "$1 $dataset M=$M subcentroids=$subcentroids sep=$sep" >> failed_distortion_runs.txt
+  else
+      echo "$1 $dataset M=$M subcentroids=$subcentroids sep=$sep" >> successful_distortion_runs.txt
+      sed -i s/$/,"$time"/ "./output/$file"
+  fi
 }
 
-#only works on Ryzen 7 5800X3D
-run_perf-l3() {
-  local pq=${2}
-  sudo perf stat -x \; -o "./perf_output/distortion/$1 $dataset $M $centroids $sample_size TRUE" --append \
-       -e r0300C0000040FF04 -e r0300C00000400104 -e r430729 $CMD distortion_test.dml  \
-       -nvargs dataset=$dataset M=$M calc_dist=$calc_dist sample_size=$sample_size centroids=$centroids pq=$pq sep=TRUE
-}
-
-for centroids in 8 16 32 64 128 256; do
-  #pq
-  for M in 1 2 4 8; do
-    for sep in FALSE TRUE ; do
-      run_perf PQ TRUE
-      #run_perf-l3 pq $dataset $M $centroids $sample_size TRUE
+execute_runs() {
+  local M_list=$1
+  local c_list=$2
+  dataset=$3
+  for centroids in $c_list; do
+    #run product quantization
+    for M in $M_list; do
+      subcentroids=$((centroids / M))
+      echo "$centroids $subcentroids $M"
+      for sep in FALSE TRUE ; do
+        run_perf PQ TRUE
+      done
     done
+    #run kmeans
+    sep=FALSE
+    subcentroids=$centroids
+    M=1
+    run_perf K-Means FALSE
   done
-  #kmeans as reference
-  M=1
-  run_perf K-Means FALSE
-done
+}
 
+application="ann"
+execute_runs "1 2 4 8" "8 16 32 64 128" "sift_base_100k"
+
+application="ml"
+execute_runs "1 2 4 8" "8 16 32" "Adult"
+execute_runs "1 2 4 8" "8 16 32" "Covtype"
+execute_runs "1 2 4 8" "8 16 32 64 128 256" "KDD98"
 
 sudo rm output/distortion/*.mtd
 python3 parse_outputs.py dist
-#python3 plot.py
-#sudo rm output/*
-#sudo rm perf_output/*

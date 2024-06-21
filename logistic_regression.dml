@@ -1,6 +1,6 @@
 #parameters
 M = $M
-centroids = $centroids
+subcentroids = $subcentroids
 dataset = $dataset
 pq = $pq
 sep = $sep
@@ -19,8 +19,8 @@ if(pq) {
       X = cbind(X, zeros)
   }
   #perform clustering
-  print(toString("Starting Clustering with parameters: M=" + M + " centroids=" + centroids + " sep=" + sep))
-  [codebook, X] = quantizeByCluster(X, M, centroids, 1, 100, 1e-4, nrow(X) %/% centroids, sep, 2)
+  print(toString("Starting Clustering with parameters: M=" + M + " subcentroids=" + subcentroids + " sep=" + sep))
+  [codebook, X] = quantizeByCluster(X, M, subcentroids, 1, 100, 1e-4, nrow(X) %/% subcentroids, sep, 2)
   print(toString("Clustering completed."))
 }
 
@@ -84,16 +84,15 @@ else {
     print(toString("Regression completed."))
     yhat = X2 %*% B[1:ncol(X2),] + as.scalar(B[ncol(X)+1,]);
     e = (y-yhat)^2;
-#     yhat = lmPredict(X=X2, B=B, ytest=y);
+    #yhat = lmPredict(X=X2, B=B, ytest=y);
     #compute Mean Squared Error
     res = colSums(e)
 }
 
-sample_size = 0 #nrow(X)
 if(pq) {
-out_file = "output/ml/PQ " + dataset + " " + M + " " + centroids + " " + sample_size + " " + sep
+out_file = "output/ml/PQ " + dataset + " " + M + " " + subcentroids + " " + sep
 }
 else {
-out_file = "output/ml/Baseline " + dataset + " " + M + " " + centroids + " " + sample_size + " " + sep
+out_file = "output/ml/Baseline " + dataset + " " + M + " " + subcentroids + " " + sep
 }
 write(res, out_file, format="csv")

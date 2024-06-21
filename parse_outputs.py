@@ -3,12 +3,20 @@ import sys
 
 import numpy as np
 import pandas as pd
-
+import datetime
+import platform
+import cpuinfo
 
 def save_csv(data, dest):
     df = pd.DataFrame(data,
-                      columns=["algorithm", "dataset", "M", "subcentroids", "sample_size", "separate", 'metric', 'value'])
-    df.to_csv(dest, index=False)
+                      columns=["algorithm", "dataset", "M", "subcentroids", "separate", 'metric', 'value'])
+    df["date"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    processor = cpuinfo.get_cpu_info()["brand_raw"]
+    df["processor"] = processor
+    if not os.path.isfile(dest):
+        df.to_csv(dest, header=True, index=False)
+    else:
+        df.to_csv(dest, mode='a', header=False, index=False)
 
 def parse_perf_output(output_dir):
     data = []

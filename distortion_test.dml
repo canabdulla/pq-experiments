@@ -1,30 +1,40 @@
 M = $M
 calc_distortion = $calc_dist
-sample_size = $sample_size
-centroids = $centroids
+subcentroids = $subcentroids
 dataset = $dataset
+application = $application
 pq = $pq
 sep = $sep
 
-
-v = read("data/distortion/" + dataset + ".hdf5", rows=100000, cols=128, format="hdf5")
-
-if(sample_size < nrow(v)) {
-  v = v[1:sample_size,]
+if (application == "ann") {
+    v = read("data/" + application + "/" + dataset + ".csv", format="csv")
 }
-else {
-  sample_size = nrow(v)
+else if (application == "ml") {
+    v = read("data/" + application + "/" + dataset + "_X.csv")
 }
+
+
+rows=nrow(v)
+cols=ncol(v)
 
 if(pq) {
-  [codebook, codes] = quantizeByCluster(v, M, centroids / M, 1, 1000, 1e-8, (sample_size/(centroids/M)), sep, 2)
+  #pad the data if columns are not divisible by M
+  if(ncol(v) %% M != 0) {
+      zeros = matrix(0, rows=nrow(v), cols= ((ncol(v) %/% M) +1) * M - ncol(v) )
+      v = cbind(v, zeros)
+      rows=nrow(v)
+      cols=ncol(v)
+  }
+  #perform clustering
+  print(toString("Starting Clustering with parameters: M=" + M + " subcentroids=" + subcentroids + " sep=" + sep))
+  [codebook, codes] = quantizeByCluster(v, M, subcentroids, 1, 100, 1e-6, (rows/subcentroids), sep, 2)
+  print(toString("Clustering completed."))
 }
 else {
-  [codebook, codes] = kmeans(v, centroids, 1, 100, 1e-6, FALSE, (sample_size/centroids), 2)
+  print(toString("Starting Clustering with parameters: M=" + M + " centroids=" + subcentroids + " sep=" + sep))
+  [codebook, codes] = kmeans(v, subcentroids, 1, 100, 1e-6, FALSE, (rows/subcentroids), 2)
+  print(toString("Clustering completed."))
 }
-
-cols = 128
-rows=sample_size
 
 result = matrix(0, rows=rows, cols=cols)
 
@@ -51,10 +61,10 @@ else {
 distortion = colSums(rowSums((v - result)^2)) / rows
 
 if(pq) {
-out_file = "output/distortion/PQ " + dataset + " " + M + " " + centroids + " " + sample_size + " " + sep
+    out_file = "output/distortion/PQ " + dataset + " " + M + " " + subcentroids + " " + sep
 }
 else {
-out_file = "output/distortion/K-Means " + dataset + " " + M + " " + centroids + " " + sample_size + " " + sep
+    out_file = "output/distortion/K-Means " + dataset + " " + M + " " + subcentroids + " " + sep
 }
 #existing = read(out_file, format="csv")
 #distortion = rbind(existing, distortion)

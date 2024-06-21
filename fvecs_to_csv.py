@@ -1,9 +1,6 @@
 import numpy as np
-import h5py
 import sys
-
-in_file = "siftsmall/siftsmall_base.fvecs"
-out_file = "input/siftsmall_base.hdf5"
+import pandas as pd
 
 def read_fvecs(file_path):
     try:
@@ -20,25 +17,18 @@ def read_fvecs(file_path):
 
 def main():
     if len(sys.argv) != 4:
-        print("Usage: python fvecs_to_hdf5.py [input file] [output file] [sample size]")
+        print("Usage: python fvecs_to_csv.py [input file] [output file] [sample size]")
         return 1
     in_file = sys.argv[1]
     out_file = sys.argv[2]
     sample_size = int(sys.argv[3])
-
-    matrix = read_fvecs(in_file)
-    matrix = matrix[:sample_size,:]
-
+    data = read_fvecs(in_file)
+    data = data[:sample_size,:]
     try:
-    # save the matrix to a hdf5 file
-        with h5py.File(out_file, "w") as f:
-            f.create_dataset("*", data=matrix, dtype=np.float64)
+        df = pd.DataFrame(data)
+        df.to_csv(out_file, header=False, index=False)
     except IOError:
         sys.exit("Could not create file: " + out_file)
-    #with h5py.File(out_file, "r") as f:
-    #    loaded_matrix = f["*"][:]
-    # print(loaded_matrix.shape)
-
     print(f"Converted {in_file} to {out_file}\n")
 
 if __name__ == '__main__':

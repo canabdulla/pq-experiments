@@ -7,9 +7,6 @@ mkdir -p data;
 chmod 755 data;
 
 mkdir -p ./data/ann
-mkdir -p ./data/distortion/siftsmall
-mkdir -p ./data/distortion/sift
-mkdir -p ./data/distortion/gist
 mkdir -p ./data/ml
 
 mkdir -p ./output/distortion
@@ -21,36 +18,44 @@ mkdir -p ./results/ml
 mkdir -p ./perf_output/ml
 mkdir -p ./perf_output/distortion
 
-# Adult
-curl https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data -o data/ml/Adult.csv;
-sed -i '$d' data/ml/Adult.csv; # fix empty line at end of file
+mkdir -p ./plots/distortion/line/perf
+mkdir -p ./plots/distortion/bar/perf
+mkdir -p ./plots/ml/bar/perf
+mkdir -p ./plots/ml/line/perf
 
-# Covtype
-curl https://archive.ics.uci.edu/ml/machine-learning-databases/covtype/covtype.data.gz -o data/covtype.data.gz;
-gzip -d data/covtype.data.gz;
-mv data/covtype.data data/ml/Covtype.csv;
-
-# KDD'98
-curl https://archive.ics.uci.edu/ml/machine-learning-databases/kddcup98-mld/epsilon_mirror/cup98lrn.zip -o data/cup98lrn.zip;
-unzip data/cup98lrn.zip -d data;
-mv data/cup98LRN.txt data/ml/KDD98.csv
-rm data/cup98lrn.zip;
-sed -i 's/-/ /g' data/ml/KDD98.csv; # fix suffix - at 5th column (numerical)
-
-#SIFT10
-wget ftp://ftp.irisa.fr/local/texmex/corpus/siftsmall.tar.gz
-tar -xf siftsmall.tar.gz siftsmall
-rm siftsmall.tar.gz
-python3 fvecs_to_hdf5.py "siftsmall/siftsmall_base.fvecs" "data/distortion/siftsmall_base.hdf5" 10000
+## Adult
+#curl https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data -o data/ml/Adult.csv;
+#sed -i '$d' data/ml/Adult.csv; # fix empty line at end of file
+#
+## Covtype
+#curl https://archive.ics.uci.edu/ml/machine-learning-databases/covtype/covtype.data.gz -o data/covtype.data.gz;
+#gzip -d data/covtype.data.gz;
+#mv data/covtype.data data/ml/Covtype.csv;
+#
+## KDD'98
+#curl https://archive.ics.uci.edu/ml/machine-learning-databases/kddcup98-mld/epsilon_mirror/cup98lrn.zip -o data/cup98lrn.zip;
+#unzip data/cup98lrn.zip -d data;
+#mv data/cup98LRN.txt data/ml/KDD98.csv
+#rm data/cup98lrn.zip;
+#sed -i 's/-/ /g' data/ml/KDD98.csv; # fix suffix - at 5th column (numerical)
 
 #SIFT1M
-wget ftp://ftp.irisa.fr/local/texmex/corpus/sift.tar.gz
-tar -xf sift.tar.gz sift
-rm sift.tar.gz
-python3 fvecs_to_hdf5.py "sift/sift_base.fvecs" "data/distortion/sift_base_100k.hdf5" 100000
+#wget ftp://ftp.irisa.fr/local/texmex/corpus/sift.tar.gz
+#tar -xf sift.tar.gz sift
+#rm sift.tar.gz
+#mv "sift" "data/ann/sift"
+python3 fvecs_to_csv.py "data/ann/sift/sift_base.fvecs" "data/ann/sift_base_100k.csv" 100000
 
-##GIST1M
+#SIFT10
+#wget ftp://ftp.irisa.fr/local/texmex/corpus/siftsmall.tar.gz
+#tar -xf siftsmall.tar.gz siftsmall
+#rm siftsmall.tar.gz
+#mv "siftsmall" "data/ann/siftsmall"
+python3 fvecs_to_csv.py "data/ann/siftsmall/siftsmall_base.fvecs" "data/ann/siftsmall_base.csv" 10000
+
+#GIST1M
 #wget ftp://ftp.irisa.fr/local/texmex/corpus/gist.tar.gz
 #tar -xf gist.tar.gz gist
 #rm gist.tar.gz
-#python3 fvecs_to_hdf5.py "gist/gist_base.fvecs" "data/distortion/gist_base_100k.hdf5" 100000
+#mv "gist" "data/ann/gist"
+python3 fvecs_to_csv.py "data/ann/gist/gist_base.fvecs" "data/ann/gist_base_100k.csv" 100000
