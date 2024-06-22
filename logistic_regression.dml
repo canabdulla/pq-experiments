@@ -90,9 +90,9 @@ else {
 }
 
 if(pq) {
-out_file = "output/ml/PQ " + dataset + " " + M + " " + subcentroids + " " + sep
+    out_file = "output/ml/PQ " + dataset + " " + M + " " + subcentroids + " " + sep
 }
 else {
-out_file = "output/ml/Baseline " + dataset + " " + M + " " + subcentroids + " " + sep
+    out_file = "output/ml/Baseline " + dataset + " " + M + " " + subcentroids + " " + sep
 }
 write(res, out_file, format="csv")

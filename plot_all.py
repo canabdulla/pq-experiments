@@ -51,7 +51,7 @@ def plot_dist_all(df):
                 if m == "ms":
                     data["value"] = data["value"] / 1000
                 plot_dist_dataset_line(data, d, m, s)
-                plot_dist_dataset_grouped_bar(data, d, m, s)
+                # plot_dist_dataset_grouped_bar(data, d, m, s)
 
 
 
