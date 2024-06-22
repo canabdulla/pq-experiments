@@ -12,7 +12,7 @@ run_reg() {
    -exec singlenode -stats
   end=$(date +%s%N)
   time=$((($end-$start) / 1000000 - 1500))
-  sed -i s/$/,"$time"/ "./output/ml/$1 $dataset $M $subcentroids 0 $sep"
+  sed -i s/$/,"$time"/ "./output/ml/$1 $dataset $M $subcentroids $sep"
 }
 
 execute_runs() {
@@ -37,6 +37,8 @@ execute_runs() {
     done
   done
 }
+rm -f output/ml/*
+rm -f perf_output/ml/*
 
 #clustering with 64 or more centroids causes kmeans to fail because the wcss is 0
 execute_runs "1 2 4 8" "4 8 16 32" "Adult"
@@ -44,4 +46,4 @@ execute_runs "1 2 4 8" "4 8 16 32" "Covtype"
 execute_runs "1 2 4 8" "4 8 16 32 64 128 256" "KDD98"
 
 rm -f output/ml/*.mtd
-python3 parse_outputs.py  reg
+python3 parse_outputs.py ml

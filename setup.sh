@@ -1,12 +1,16 @@
 #!/bin/bash
 
 #SYSTEMDS_ROOT env needs to be set
-sudo apt-get install linux-tools-common linux-tools-generic linux-tools-`uname -r`
-pip install numpy
-pip install matplotlib
-pip install pandas
-pip install h5py
-pip install tables
+
+#REMOVE COMMENT TO CLONE SYSTEMDS INTO CURRENT DIRECTORY AND SET ENV VARIABLE
+#sudo apt install openjdk-11-jdk
+#sudo apt install maven
+#git clone https://github.com/apache/systemds.git systemds
+#echo 'export SYSTEMDS_ROOT='$(pwd) >> ~/.bashrc
+#echo 'export PATH=$SYSTEMDS_ROOT/bin:$PATH' >> ~/.bashrc
+
+#MANUALLY SET SYSTEMDS ENV
+#SYSTEMDS_ROOT="systemds"
 
 dir=$(pwd)
 cd "$SYSTEMDS_ROOT" || exit

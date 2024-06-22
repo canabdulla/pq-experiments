@@ -50,7 +50,7 @@ def parse_dist_output(output_dir):
     return data
 
 
-def parse_regr_output(output_dir):
+def parse_ml_output(output_dir):
     data = []
     for filename in os.listdir(output_dir):
         dataset = filename.split(' ')[1]
@@ -76,10 +76,10 @@ def main():
         perf_data = parse_perf_output("perf_output/distortion")
         data.extend(perf_data)
         save_csv(data, "results/distortion.csv")
-    elif sys.argv[1] == "reg":
+    elif sys.argv[1] == "ml":
         # perf_data = parse_perf_output("perf_output/ml")
-        data = parse_regr_output("output/ml")
-        perf_data = parse_perf_output("perf_output/ml")
+        data = parse_ml_output("server-files/output/ml")
+        perf_data = parse_perf_output("server-files/perf_output/ml")
         data.extend(perf_data)
         save_csv(data, "./results/ml.csv")
 

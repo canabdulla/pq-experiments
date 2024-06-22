@@ -4,8 +4,8 @@ calc_dist=TRUE
 CMD="java -Xmx12g -Xms12g -cp ./lib/*:./SystemDS.jar org.apache.sysds.api.DMLScript "
 CONF=" -config exp/dataprep/SystemDS-config.xml" #just for faster training (~7x)
 
-sudo rm output/distortion/*
-sudo rm perf_output/distortion/*
+#sudo rm output/distortion/*
+#sudo rm perf_output/distortion/*
 
 run_perf() {
   local pq=${2}
@@ -45,12 +45,12 @@ execute_runs() {
 }
 
 application="ann"
-execute_runs "1 2 4 8" "8 16 32 64 128" "sift_base_100k"
+execute_runs "1 2 4 8" "8 16 32 64 128 256" "sift_base_100k"
 
-application="ml"
-execute_runs "1 2 4 8" "8 16 32" "Adult"
-execute_runs "1 2 4 8" "8 16 32" "Covtype"
-execute_runs "1 2 4 8" "8 16 32 64 128 256" "KDD98"
+#application="ml"
+#execute_runs "1 2 4" "4 8 16 32 64 128" "Adult"
+#execute_runs "1 2 4" "4 8 16 32" "Covtype"
+#execute_runs "1 2 4 8" "8 16 32 64 128 256" "KDD98"
 
-sudo rm output/distortion/*.mtd
+rm -f output/distortion/*.mtd
 python3 parse_outputs.py dist

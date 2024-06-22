@@ -43,19 +43,19 @@ mkdir -p ./plots/ml/line/perf
 #wget ftp://ftp.irisa.fr/local/texmex/corpus/sift.tar.gz
 #tar -xf sift.tar.gz sift
 #rm sift.tar.gz
-#mv "sift" "data/ann/sift"
+#mv "sift" "data/ann/"
 python3 fvecs_to_csv.py "data/ann/sift/sift_base.fvecs" "data/ann/sift_base_100k.csv" 100000
 
 #SIFT10
 #wget ftp://ftp.irisa.fr/local/texmex/corpus/siftsmall.tar.gz
 #tar -xf siftsmall.tar.gz siftsmall
 #rm siftsmall.tar.gz
-#mv "siftsmall" "data/ann/siftsmall"
+#mv "siftsmall" "data/ann/"
 python3 fvecs_to_csv.py "data/ann/siftsmall/siftsmall_base.fvecs" "data/ann/siftsmall_base.csv" 10000
 
 #GIST1M
 #wget ftp://ftp.irisa.fr/local/texmex/corpus/gist.tar.gz
 #tar -xf gist.tar.gz gist
 #rm gist.tar.gz
-#mv "gist" "data/ann/gist"
+#mv "gist" "data/ann/"
 python3 fvecs_to_csv.py "data/ann/gist/gist_base.fvecs" "data/ann/gist_base_100k.csv" 100000

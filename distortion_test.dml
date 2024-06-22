@@ -27,12 +27,12 @@ if(pq) {
   }
   #perform clustering
   print(toString("Starting Clustering with parameters: M=" + M + " subcentroids=" + subcentroids + " sep=" + sep))
-  [codebook, codes] = quantizeByCluster(v, M, subcentroids, 1, 100, 1e-6, (rows/subcentroids), sep, 2)
+  [codebook, codes] = quantizeByCluster(v, M, subcentroids, 1, 1000, 1e-8, (rows/subcentroids), sep, 2)
   print(toString("Clustering completed."))
 }
 else {
   print(toString("Starting Clustering with parameters: M=" + M + " centroids=" + subcentroids + " sep=" + sep))
-  [codebook, codes] = kmeans(v, subcentroids, 1, 100, 1e-6, FALSE, (rows/subcentroids), 2)
+  [codebook, codes] = kmeans(v, subcentroids, 1, 1000, 1e-8, FALSE, (rows/subcentroids), 2)
   print(toString("Clustering completed."))
 }
 
