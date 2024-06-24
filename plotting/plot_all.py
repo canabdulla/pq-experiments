@@ -28,7 +28,7 @@ def plot_ml(df):
                     continue
                 if m == "ms":
                     data["value"] = data["value"] / 1000
-                plot_ml_dataset_line(data, d, m, s)
+                # plot_ml_dataset_line(data, d, m, s)
                 plot_ml_dataset_grouped_bar(data, d, m, s)
             data = df.query(f"dataset == '{d}' and metric == '{m}'")
             if data.empty:
@@ -70,12 +70,18 @@ def main():
     if len(sys.argv) < 2:
         print("Usage: {} <test_case>".format(sys.argv[0]))
         return 1
+    agg_cols = ["value"] #, "date", "processor"]
     if sys.argv[1] == "dist":
-        df = pd.read_csv('results/distortion.csv')
+        df = pd.read_csv('server-files/distortion.csv')
+        df.drop('date', axis=1, inplace=True)
+        df = df.query("M != 8 or dataset != 'Adult'")
+        df = df.groupby([c for c in df.columns if c not in agg_cols]).mean().reset_index()
         plot_dist_all(df)
         plot_dist(df)
     elif sys.argv[1] == "ml":
-        df = pd.read_csv('results/ml.csv')
+        df = pd.read_csv('server-files/ml.csv')
+        df.drop('date', axis=1, inplace=True)
+        df = df.groupby([c for c in df.columns if c not in agg_cols]).mean().reset_index()
         plot_ml(df)
 
 

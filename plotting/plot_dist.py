@@ -77,36 +77,6 @@ def plot_dist_dataset_line(df, dataset, metric, sep):
     save_plot("distortion", "line", dataset, metric, sep)
 
 
-def plot_dist_dataset_grouped_bar(df, dataset, metric, sep):
-    M_list = sorted(df["M"].unique())
-    width = 0.2
-    i = 0
-    bars = []
-
-    fig, ax = plt.subplots()
-    df = df.query("algorithm != 'K-Means'")
-
-    # plot bars and baseline
-    for M in M_list:
-        Mdf = df[df["M"] == M]
-        if M != 0:
-            q = np.arange(len(Mdf["centroids"].unique()))
-            bars.append(ax.bar(q + i * width, Mdf["value"], width, color=colors_M[M]))
-            i += 1
-
-    # add x-ticks
-    q = np.arange(len(df["centroids"].unique()) - 1)
-    plt.xticks(q + ((i - 1) / 2) * width, sorted(df["centroids"].unique())[1:], rotation=90)
-
-    # add axis labels
-    plt.xlabel("Number of centroids")
-    plt.ylabel(all_labels[metric])
-
-    control_axis(metric, ax)
-    add_legend_M([m for m in M_list if m != 0], ax, "bar", False)
-    add_legend_dataset(ax, dataset)
-    save_plot("distortion", "bar", dataset, metric, sep)
-
 def plot_dist_time(dist, time, dataset, sep):
     M_list = sorted(dist["M"].unique())
     # metric = df["metric"].unique()[0]

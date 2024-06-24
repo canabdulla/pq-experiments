@@ -1,0 +1,94 @@
+compute_distance_matrix = function(Matrix[double] x)
+  return (Matrix[Double] D) {
+    sq = matrix(0, cols=1, rows=nrow(x))
+    ones = matrix(1, cols=1, rows=nrow(x))
+    #compute hadamard product
+    sq = x^2
+    #compute distance matrix
+    D = -2 * (x %*% t(x)) + sq %*% t(ones) + ones %*% t(sq)
+}
+
+M = 2 #$M
+subcentroids = 256#$subcentroids
+
+dataset = "siftsmall_base" #$dataset
+
+v = read("data/ann/" + dataset + ".csv", format="csv")
+
+
+rows=nrow(v)
+cols=ncol(v)
+
+#pad the data if number of columns is not divisible by M
+if(ncol(v) %% M != 0) {
+  zeros = matrix(0, rows=nrow(v), cols= ((ncol(v) %/% M) +1) * M - ncol(v) )
+  v = cbind(v, zeros)
+  rows=nrow(v)
+  cols=ncol(v)
+}
+
+#perform clustering
+print(toString("Starting Clustering with parameters: M=" + M + " subcentroids=" + subcentroids + " sep=TRUE"))
+[codebook, codes] = quantizeByCluster(v, M, subcentroids, 1, 1000, 1e-8, (rows/subcentroids), TRUE, 2)
+print(toString("Clustering completed."))
+
+#compute distance matrices and save them in D
+l = subcentroids
+D = matrix(0, cols=l, rows=l*M)
+for(j in 1:M) {
+    subc = codebook[(j-1)*l+1:j*l,]
+    D[(j-1)*l+1:j*l,] = dist(subc) #compute_distance_matrix(subc)
+}
+
+
+query_vectors = read("data/ann/siftsmall_query.csv", format="csv")
+# all = rbind(v, query_vectors)
+# oki = dist(all)
+# test = t(oki[nrow(v)+1, 1:10000])
+# write(test, "data/ann/test.csv")
+# print(toString(test))
+# x = order(target=test, by=1, decreasing=FALSE, index.return=TRUE)
+# write(x, "data/ann/asdf.csv")
+# print(toString(x))
+
+truth_vectors = read("data/ann/siftsmall_truth.csv", format="csv")
+truth_vectors = truth_vectors[1:nrow(truth_vectors), 1]
+retrieved = 0
+
+for(c in 1:100) {
+    query_v = query_vectors[c,]
+    # query_c = t(codes[query_v,])
+    query_c = matrix(0, cols=1, rows=M)
+
+    #compute codes of query vector
+    subv_s = ncol(v) / M
+    ones = matrix(1, cols=1, rows=l)
+    for(i in 1:M) {
+        subv = query_v[1, (i-1)*subv_s +1: i * subv_s]
+        st = rbind(codebook[(j-1)*l+1:j*l,],subv)
+        d = dist(st)
+        d = t(d[nrow(d), 1:ncol(d)-1])
+        x = order(target=d, by=1, decreasing=FALSE, index.return=TRUE)
+        query_c[i] = x[2]
+    }
+
+    # compute distances from query_v to all other vectors
+    d = matrix(0, cols=1, rows=nrow(codes))
+    for(i in 1:nrow(codes), check=0) {
+        comp_c = t(codes[i,])
+        distance = 0
+        for(j in 1:M) {
+            qc = query_c[j]
+            distance += as.scalar(D[as.scalar(comp_c[j]), as.scalar(qc)])
+        }
+        d[i] = distance
+    }
+    x = order(target=d, by=1, decreasing=FALSE, index.return=TRUE)
+    x = x[1:100]
+    nearest_neighbor = as.scalar(truth_vectors[c])+1
+    retrieved_correctly = contains(target=x, pattern=nearest_neighbor)
+    if(retrieved_correctly) {
+        retrieved = retrieved +1
+    }
+}
+print(toString(retrieved/100))

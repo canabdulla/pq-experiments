@@ -5,6 +5,7 @@ dataset = $dataset
 application = $application
 pq = $pq
 sep = $sep
+out_file = "output/" + $out_file
 
 if (application == "ann") {
     v = read("data/" + application + "/" + dataset + ".csv", format="csv")
@@ -60,14 +61,12 @@ else {
 
 distortion = colSums(rowSums((v - result)^2)) / rows
 
-if(pq) {
-    out_file = "output/distortion/PQ " + dataset + " " + M + " " + subcentroids + " " + sep
-}
-else {
-    out_file = "output/distortion/K-Means " + dataset + " " + M + " " + subcentroids + " " + sep
-}
-#existing = read(out_file, format="csv")
-#distortion = rbind(existing, distortion)
+# if(pq) {
+#     out_file = "output/distortion/PQ " + dataset + " " + M + " " + subcentroids + " " + sep
+# }
+# else {
+#     out_file = "output/distortion/K-Means " + dataset + " " + M + " " + subcentroids + " " + sep
+# }
 write(distortion, out_file, format="csv", header=FALSE, sep=";")
 
 

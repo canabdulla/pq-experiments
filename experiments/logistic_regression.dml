@@ -1,0 +1,165 @@
+#parts of the code are taken from https://github.com/damslab/reproducibility/blob/master/sigmod2021-sliceline-p218/
+
+oneHotEncode = function(Matrix [Double] X)
+    return (Matrix[Double] Y) {
+    m = nrow(X)
+    n = ncol(X)
+    fdom = colMaxs(X);
+    foffb = t(cumsum(t(fdom))) - fdom;
+    foffe = t(cumsum(t(fdom)))
+    rix = matrix(seq(1,m)%*%matrix(1,1,n), m*n, 1)
+    cix = matrix(X + foffb, m*n, 1);
+    Y = table(rix, cix); #one-hot encoded
+}
+
+calculateStatistics = function(String dataset, Matrix [Double] B, Matrix [Double] Xtest, Matrix[Double] ytest)
+    return (Matrix[Double] res) {
+    [Matrix,yhat,acc] = multiLogRegPredict(X=Xtest, B=B, Y=ytest, verbose=FALSE);
+    e = (ytest!=yhat);
+    [conf_a, conf_r] = confusionMatrix(yhat,ytest)
+
+    stats = matrix(0, nrow(conf_a)+1, 4)
+    #calculate statistics for a multiclass classifier
+    if (dataset != "Adult") {
+        #compute precision, recall and f-score for every class
+        precision = matrix(0, nrow(conf_a), 1)
+        recall = matrix(0, nrow(conf_a), 1)
+        f_score = matrix(0, nrow(conf_a), 1)
+        for(i in 1:ncol(conf_a)) {
+            precision[i] = conf_a[i, i] / as.scalar(rowSums(conf_a[i,]))
+            recall[i] = conf_a[i, i] / as.scalar(colSums(conf_a[,i]))
+            f_score[i] = 2 * (recall[i] * precision[i]) / (recall[i] + precision[i])
+        }
+
+        #accuracy
+        stats[1,1] = acc #1 - (sum(e) / nrow(ytest))
+        #avg_precision
+        avg_precision = as.scalar(colSums(precision)) / nrow(precision)
+        stats[1,2] = avg_precision
+        #avg_recall
+        avg_recall = as.scalar(colSums(recall)) / nrow(recall)
+        stats[1,3] = avg_recall
+        #macro_f1
+        stats[1,4] = 2 * (avg_precision * avg_recall) / (avg_precision + avg_recall)
+        res = stats[1,1:4]
+    }
+    #calculate statistics for a binary classifier
+    else {
+        #accuracy
+        stats[1,1] = acc / 100 #1 - (sum(e) / nrow(ytest))
+        #precision
+        precision = (conf_a[1,1]) / (conf_a[1,1] + conf_a[1,2])
+        stats[1,2] = precision
+        #recall
+        recall = (conf_a[1,1]) / (conf_a[1,1] + conf_a[2,1])
+        stats[1,3] = recall
+        #f1
+        stats[1,4] = 2 * (precision * recall) / (precision + recall)
+        res = stats[1,1:4]
+    }
+}
+
+#parameters
+M = $M
+subcentroids = $subcentroids
+dataset = $dataset
+pq = $pq
+sep = $sep
+out_file = "output/" + $out_file
+
+#read the data
+dir="./data/ml/"
+# dataset="Adult"
+print(toString(dir + dataset))
+X = read(dir + dataset + "_X.csv")
+y = read(dir + dataset + "_y.csv")
+
+
+if(pq) {
+  #pad the data if columns are not divisible by M
+  if(ncol(X) %% M != 0) {
+      zeros = matrix(0, rows=nrow(X), cols= ((ncol(X) %/% M) +1) * M - ncol(X) )
+      X = cbind(X, zeros)
+  }
+  #perform clustering
+  print(toString("Starting Clustering with parameters: M=" + M + " subcentroids=" + subcentroids + " sep=" + sep))
+  [codebook, X] = quantizeByCluster(X, M, subcentroids, 1, 100, 1e-4, nrow(X) %/% subcentroids, sep, 2)
+  print(toString("Clustering completed."))
+}
+
+
+X2 = oneHotEncode(X)
+cols=ncol(X2)
+[Xtrain,Xtest,ytrain,ytest] = split(X=X2,Y=y, f=0.8)
+
+print(toString(cols))
+print(toString(ncol(X2)))
+print(toString(ncol(Xtrain)))
+print(toString(nrow(Xtrain)))
+print(toString(ncol(Xtest)))
+
+# model = ffTrain(X=Xtrain, Y=ytrain, out_activation="sigmoid", loss_fcn="cel")
+# yhat = ffPredict(model=model, X=Xtest)
+# learn model
+print(toString("Starting regression."))
+
+if (dataset != "KDD98") {
+
+    #logistic regression
+    B = multiLogReg(X=Xtrain, Y=ytrain, icpt=1, reg=0.00001, verbose=FALSE);
+    print(toString("Regression completed."))
+
+    res = matrix(0, rows=1, cols=8)
+    res[1, 1:4] = calculateStatistics(dataset, B, Xtrain, ytrain)
+    res[1, 5:8] = calculateStatistics(dataset, B, Xtest, ytest)
+
+    #output train accuracy|train precision|train recall|train f1  |  test accuracy|test precision|test recall|test f1
+}
+else {
+    #run linear regression
+    B = lm(X=Xtrain, y=ytrain, icpt=1, reg=0.0001, verbose=TRUE);
+    print(toString("Regression completed."))
+
+    res = matrix(0, rows=1, cols=4)
+
+    #compute Mean Squared Error
+    ytrain_hat = Xtrain %*% B[1:cols,] + as.scalar(B[cols+1,]);
+    e_train = (ytrain-ytrain_hat)^2;
+    ytest_hat = Xtest %*% B[1:cols,] + as.scalar(B[cols+1,]);
+    e_test = (ytest-ytest_hat)^2;
+    mse_train = colSums(e_train) / nrow(e_train)
+    mse_test = colSums(e_test) / nrow(e_test)
+
+    #compute R squared
+    mean_ytrain = as.scalar(colSums(ytrain) / nrow(ytrain))
+    mean_ytest = as.scalar(colSums(ytest) / nrow(ytest))
+    print(toString(mean_ytest))
+
+    sst_train = colSums( (ytrain - mean_ytrain)^2 )
+    sst_test = colSums( (ytest - mean_ytest)^2 )
+    print(toString(sst_test))
+
+    ssr_train = colSums(e_train)
+    ssr_test = colSums(e_test)
+    print(toString(ssr_test))
+    
+    rsq_train = 1 - (ssr_train / sst_train)
+    rsq_test = 1 - (ssr_test / sst_test)
+    print(toString(rsq_test))
+
+    res[1,1] = mse_train
+    res[1,2] = rsq_train
+    res[1,3] = mse_test
+    res[1,4] = rsq_test
+
+
+    #output: train mse|train R²|test mse|test R²|
+}
+
+if(pq) {
+    out_file = "output/ml/PQ " + dataset + " " + M + " " + subcentroids + " " + sep
+}
+else {
+    out_file = "output/ml/Baseline " + dataset + " " + M + " " + subcentroids + " " + sep
+}
+write(res, out_file, format="csv")

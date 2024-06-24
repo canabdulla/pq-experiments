@@ -2,10 +2,15 @@ import numpy as np
 import sys
 import pandas as pd
 
-def read_fvecs(file_path):
+def read_fvecs(file_path, type):
     try:
         with open(file_path, "rb") as f:
-            data = np.fromfile(f, dtype=np.float32)
+            if type == "ivecs":
+                data = np.fromfile(f, dtype=np.int32)
+            elif type == "fvecs":
+                data = np.fromfile(f, dtype=np.float32)
+            else:
+                raise Exception("Unsupported type")
             d_view = data.view(dtype=np.int32)
             dim = d_view[0]
             num_vectors = int (data.size / (dim+1))
@@ -22,8 +27,9 @@ def main():
     in_file = sys.argv[1]
     out_file = sys.argv[2]
     sample_size = int(sys.argv[3])
-    data = read_fvecs(in_file)
-    data = data[:sample_size,:]
+    type = in_file.split(".")[-1]
+    data = read_fvecs(in_file, type)
+    # data = data[:sample_size,:]
     try:
         df = pd.DataFrame(data)
         df.to_csv(out_file, header=False, index=False)
