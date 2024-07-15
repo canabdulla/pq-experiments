@@ -49,13 +49,24 @@ def parse_dist_output(output_dir):
             data.append(testcase)
     return data
 
+def parse_ann_output(output_dir):
+    data = []
+    for filename in os.listdir(output_dir):
+        val = np.loadtxt(open(os.path.join(output_dir, filename), "rb"), delimiter=",")
+        metrics = ["recall", "ms"]
+        for i in range(len(val)):
+            testcase = os.path.splitext(filename)[0].split()
+            testcase.append(metrics[i])
+            testcase.append(val[i])
+            data.append(testcase)
+    return data
 
 def parse_ml_output(output_dir):
     data = []
     for filename in os.listdir(output_dir):
         dataset = filename.split(' ')[1]
         if dataset == 'KDD98':
-            metrics = ["mse", "ms"]
+            metrics = ["train mse", "train rsq", "test mse", "test rsq", "ms"]
         else:
             metrics = ["accuracy", "avg-precision", "avg-recall", "macro-f1", "ms"]
         val = np.loadtxt(open(os.path.join(output_dir, filename), "rb"), delimiter=",")
@@ -77,11 +88,15 @@ def main():
         data.extend(perf_data)
         save_csv(data, "results/distortion.csv")
     elif sys.argv[1] == "ml":
-        # perf_data = parse_perf_output("perf_output/ml")
         data = parse_ml_output("output/ml")
         perf_data = parse_perf_output("perf_output/ml")
         data.extend(perf_data)
-        save_csv(data, "./results/ml.csv")
+        save_csv(data, "./results/ml111.csv")
+    elif sys.argv[1] == "ann":
+        data = parse_ann_output("output/ann")
+        perf_data = parse_perf_output("perf_output/ann")
+        data.extend(perf_data)
+        save_csv(data, "./results/ann.csv")
 
 
 if __name__ == '__main__':

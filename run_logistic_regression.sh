@@ -55,12 +55,11 @@ rm -f output/ml/*
 rm -f perf_output/ml/*
 
 #clustering with 64 or more centroids causes kmeans to fail because the wcss is 0
-#execute_runs "1 2 4" "4 8 16 32 64 128 256" "Adult"
-#execute_runs "1 2 4 8" "8 16 32" "Covtype"
-#execute_runs "1 2 4 8" "8 16 32 64 128 256" "KDD98"
-execute_runs "" "" "KDD98"
+execute_runs "1 2 4" "4 8 16 32 64 128 256" "Adult"
+execute_runs "1 2 4 8" "8 16 32 64 128 256" "Covtype"
+execute_runs "1 2 4 8" "8 16 32 64 128 256" "KDD98"
 
 #remove metadata file to ensure correct parsing of outputs
 rm -f output/ml/*.mtd
 #parse all of the outputs to a single csv file. if it already the results are appended
-#python3 parse_outputs.py ml
+python3 parse_outputs.py ml

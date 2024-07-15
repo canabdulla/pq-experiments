@@ -34,7 +34,7 @@ run_distortion() {
 
 #run the distortion tests for different parameters
 execute_runs() {
-  local M_list=$alg
+  local M_list=$1
   local c_list=$2
   dataset=$3
 
@@ -58,12 +58,12 @@ execute_runs() {
 rm -f output/distortion/*
 rm -f perf_output/distortion/*
 
-application="ann"
-execute_runs "1 2 4 8" "8 16 32 64 128 256" "sift_base_100k"
+#application="ann"
+#execute_runs "1 2 4 8" "8 16 32 64 128 256" "sift_base_100k"
 
 application="ml"
 execute_runs "1 2 4" "4 8 16 32 64 128 256" "Adult"
-execute_runs "1 2 4 8" "8 16 32" "Covtype"
+execute_runs "1 2 4 8" "8 16 32 64 128 256" "Covtype"
 execute_runs "1 2 4 8" "8 16 32 64 128 256" "KDD98"
 
 #remove metadata file to ensure correct parsing of outputs

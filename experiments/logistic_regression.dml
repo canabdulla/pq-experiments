@@ -92,14 +92,6 @@ X2 = oneHotEncode(X)
 cols=ncol(X2)
 [Xtrain,Xtest,ytrain,ytest] = split(X=X2,Y=y, f=0.8)
 
-print(toString(cols))
-print(toString(ncol(X2)))
-print(toString(ncol(Xtrain)))
-print(toString(nrow(Xtrain)))
-print(toString(ncol(Xtest)))
-
-# model = ffTrain(X=Xtrain, Y=ytrain, out_activation="sigmoid", loss_fcn="cel")
-# yhat = ffPredict(model=model, X=Xtest)
 # learn model
 print(toString("Starting regression."))
 
@@ -145,7 +137,8 @@ else {
     
     rsq_train = 1 - (ssr_train / sst_train)
     rsq_test = 1 - (ssr_test / sst_test)
-    print(toString(rsq_test))
+    print("RSQ TEST: " + toString(rsq_test))
+    print("RSQ Train: " + toString(rsq_train))
 
     res[1,1] = mse_train
     res[1,2] = rsq_train
