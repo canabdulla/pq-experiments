@@ -8,8 +8,11 @@ compute_distance_matrix = function(Matrix[double] x)
     D = -2 * (x %*% t(x)) + sq %*% t(ones) + ones %*% t(sq)
 }
 
-M = 2 #$M
-subcentroids = 256#$subcentroids
+M = $M
+subcentroids = $subcentroids
+out_file = "output/" + $out_file
+# M = 2 #$M
+# subcentroids = 256#$subcentroids
 
 dataset = "siftsmall_base" #$dataset
 
@@ -92,3 +95,5 @@ for(c in 1:100) {
     }
 }
 print(toString(retrieved/100))
+recall = retrieved / 100
+write(recall, out_file)
