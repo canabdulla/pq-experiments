@@ -1,0 +1,68 @@
+# -- Baseline sampling with f=0.1, nrow=3256.0
+# ---- Train Accuracy (%): 86.13587457731326
+# ---- Test Accuracy (%): 84.90836490222176
+# -- Baseline sampling with f=0.01, nrow=326.0
+# ---- Train Accuracy (%): 91.7933130699088
+# ---- Test Accuracy (%): 82.24633971536808
+# -- Baseline sampling with f=0.001, nrow=33.0
+# ---- Train Accuracy (%): 100.0
+# ---- Test Accuracy (%): 69.39694890959352
+oneHotEncode = function(Matrix [Double] X)
+    return (Matrix[Double] Y) {
+    m = nrow(X)
+    n = ncol(X)
+    fdom = colMaxs(X);
+    foffb = t(cumsum(t(fdom))) - fdom;
+    foffe = t(cumsum(t(fdom)))
+    rix = matrix(seq(1,m)%*%matrix(1,1,n), m*n, 1)
+    cix = matrix(X + foffb, m*n, 1);
+    Y = table(rix, cix); #one-hot encoded
+}
+
+# X = read("data/ml/Adult_X.csv")
+# y = read("data/ml/Adult_y.csv")
+
+X = read("data/ml/Covtype_X.csv")
+y = read("data/ml/Covtype_y.csv")
+
+M = $M
+pq = $pq
+subcentroids = $subcentroids
+sep = $sep
+out_file = "output/" +  $out_file
+
+if(pq) {
+  #pad the data if columns are not divisible by M
+  if(ncol(X) %% M != 0) {
+      zeros = matrix(0, rows=nrow(X), cols= ((ncol(X) %/% M) +1) * M - ncol(X) )
+      X = cbind(X, zeros)
+  }
+  #perform clustering
+  print(toString("Starting Clustering with parameters: M=" + M + " subcentroids=" + subcentroids + " sep=" + sep))
+  [codebook, X] = quantizeByCluster(X, M, subcentroids, 1, 100, 1e-5, nrow(X) %/% subcentroids, sep, 2)
+  print(toString("Clustering completed."))
+}
+
+X = oneHotEncode(X)
+
+if(!pq) {
+    [Xtrain, Xtest, ytrain, ytest] = split(X=X, Y=y, f=0.7, cont=FALSE, seed=2)
+    sfi = M / 54
+    print("Baseline uniform sampling with f="+sfi+", nrow="+round(nrow(X)*sfi))
+    [Xtrain2,Xtest2,ytrain2,ytest2] = split(X=X,Y=y,f=sfi,cont=FALSE,seed=7)
+    B = multiLogReg(X=Xtrain2, Y=ytrain2, maxii=50, icpt=2, reg=0.001, verbose=FALSE)
+    [Matrix,yhat,train_acc] = multiLogRegPredict(X=Xtrain2, B=B, Y=ytrain2, verbose=FALSE)
+    [Matrix,yhat,test_acc] = multiLogRegPredict(X=Xtest, B=B, Y=ytest, verbose=FALSE)
+}
+else {
+   [Xtrain2, Xtest, ytrain2, ytest] = split(X=X, Y=y, f=0.7, cont=FALSE, seed=2)
+   B = multiLogReg(X=Xtrain2, Y=ytrain2, maxii=50, icpt=2, reg=0.001, verbose=FALSE)
+   [Matrix,yhat,train_acc] = multiLogRegPredict(X=Xtrain2, B=B, Y=ytrain2, verbose=FALSE)
+   [Matrix,yhat,test_acc] = multiLogRegPredict(X=Xtest, B=B, Y=ytest, verbose=FALSE)
+}
+res = matrix(0, rows=1, cols=2)
+res[1, 1] = train_acc
+res[1, 2] = test_acc
+write(res, out_file, format="csv")
+
+
