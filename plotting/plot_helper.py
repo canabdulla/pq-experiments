@@ -5,11 +5,16 @@ from parameters import *
 
 
 def control_axis(metric, ax):
-    if metric not in ["avg-precision", "avg-recall", "macro-f1", "accuracy"]:
-        ax.set_ylim(ymin=0)
-    else:
+    if metric in [f"{j}-{i}" for j in ["test", "train"] for i in
+                      ["precision", "recall", "avg-precision", "avg-recall", "macro-f1", "accuracy"]]:
+        ax.set_ylim(0, 1)
+    elif metric in ["test-rsq", "train-rsq"]:
         ax.set_ylim(0, 1)
         plt.yticks(np.arange(0, 1.1, 0.2))
+    elif metric in ["recall"]:
+        ax.set_ylim(0, 1)
+    else:
+        ax.set_ylim(ymin=0)
 
 
 def add_legend_M(M_list, ax, type, baseline):

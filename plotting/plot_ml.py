@@ -76,6 +76,62 @@ def plot_ml_dataset_line(df, dataset, metric, sep):
     save_plot("ml", "line", dataset, metric, sep)
 
 
+def plot_rsquared_dataset_grouped_bar(df, dataset, metric, sep):
+    M_list = sorted(df["M"].unique())
+    width = 0.2
+    i = 0
+    bars = []
+    fig, (ax2, ax1) = plt.subplots(1, 2, figsize=(12, 10), gridspec_kw={'width_ratios': [1, 5]})
+    ldf = df[np.abs(df["value"]) > 0.1]
+    df = df[np.abs(df["value"]) <= 0.1]
+
+    # plot bars and baseline
+    for M in M_list:
+        Mdf = df[df["M"] == M]
+        if M != 0:
+            q = np.arange(len(Mdf["centroids"].unique()))
+            bars.append(ax1.bar(q + i * width, Mdf["value"], width, color=colors_M[M]))
+            i += 1
+
+    plt.axhline(y=0, color="black", linewidth=0.8)
+    ax2.axhline(y=0, color="black", linewidth=0.8)
+
+    rvalue = ldf["value"].unique()[0]
+    ldf.plot(kind="bar", x="algorithm", y="value", ax=ax2, color="darkgreen" if rvalue > 0 else "darkred",
+             ylabel=all_labels[metric], xlabel="")
+    if rvalue > 0:
+        ax2.set_ylim([0, 1])
+    else:
+        ax2.set_ylim([-1, 0])
+    if all(i > 0 for i in df["value"]):
+        ax1.set_ylim([0, 0.01])
+        ax2.set_ylim([0, 1])
+    else:
+        ax1.set_ylim([-0.01, 0.01])
+        ax2.set_ylim([-1, 1])
+
+    ax2.tick_params(axis='x', labelrotation=360)
+    ax2.get_legend().set_visible(False)
+
+
+    # add x-ticks
+    q = np.arange(len(df["centroids"].unique()) - 1)
+    plt.xticks(q + ((i - 1) / 2) * width, sorted(df["centroids"].unique())[1:], rotation=90)
+
+    # add axis labels
+    plt.xlabel("Number of centroids")
+    plt.ylabel(all_labels[metric])
+    # ax1.set_ylim([-0.01, 0.01])
+    fig.tight_layout()
+
+    # control_axis(metric, ax1)
+    add_legend_M([m for m in M_list if m != 0], ax1, "bar", True)
+    add_legend_dataset(ax1, dataset)
+    # add_legend_dataset(ax2, dataset)
+    plt.show()
+    # save_plot("ml", "bar", dataset, metric, sep)
+
+
 def plot_ml_dataset_grouped_bar(df, dataset, metric, sep):
     M_list = sorted(df["M"].unique())
     width = 0.2
@@ -104,6 +160,8 @@ def plot_ml_dataset_grouped_bar(df, dataset, metric, sep):
     plt.ylabel(all_labels[metric])
 
     control_axis(metric, ax)
+    # ax.set_ylim(-1, 1)
+    # plt.yscale("log")
     add_legend_M([m for m in M_list if m != 0], ax, "bar", True)
     add_legend_dataset(ax, dataset)
     save_plot("ml", "bar", dataset, metric, sep)
