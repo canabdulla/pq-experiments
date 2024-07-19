@@ -72,7 +72,7 @@ for(c in 1:100) {
         d = dist(st)
         d = t(d[nrow(d), 1:ncol(d)-1])
         x = order(target=d, by=1, decreasing=FALSE, index.return=TRUE)
-        query_c[i] = x[2]
+        query_c[i] = x[1]
     }
 
     # compute distances from query_v to all other vectors
