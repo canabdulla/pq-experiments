@@ -66,6 +66,7 @@ dataset = $dataset
 pq = $pq
 sep = $sep
 out_file = "output/" + $out_file
+space_decomp = $space_decomp
 
 #read the data
 dir="./data/ml/"
@@ -83,7 +84,6 @@ if(pq) {
       zeros = matrix(0, rows=nrow(X), cols= ((ncol(X) %/% M) +1) * M - ncol(X) )
       X = cbind(X, zeros)
   }
-  space_decomp = FALSE
   subvector_size = ncol(X) / M
 
   #perform space decomposition
@@ -192,10 +192,10 @@ else {
     #output: train mse|train R²|test mse|test R²|
 }
 
-if(pq) {
-    out_file = "output/ml/PQ " + dataset + " " + M + " " + subcentroids + " " + sep
-}
-else {
-    out_file = "output/ml/Baseline " + dataset + " " + M + " " + subcentroids + " " + sep
-}
+# if(pq) {
+#     out_file = "output/ml/PQ " + dataset + " " + M + " " + subcentroids + " " + sep
+# }
+# else {
+#     out_file = "output/ml/Baseline " + dataset + " " + M + " " + subcentroids + " " + sep
+# }
 write(res, out_file, format="csv")
