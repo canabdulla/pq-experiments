@@ -11,8 +11,9 @@ compute_distance_matrix = function(Matrix[double] x)
 M = $M
 subcentroids = $subcentroids
 out_file = "output/" + $out_file
-# M = 2 #$M
-# subcentroids = 256#$subcentroids
+space_decomp = $space_decomp
+# space_decomp = TRUE
+
 
 dataset = "siftsmall_base" #$dataset
 
@@ -29,6 +30,46 @@ if(ncol(v) %% M != 0) {
   rows=nrow(v)
   cols=ncol(v)
 }
+subvector_size = ncol(v) / M
+
+#perform space decomposition
+if(space_decomp) {
+  #mittelwertbefreiung
+  col_means = colMeans(v)
+  ones = matrix(1, rows=nrow(v), cols=1)
+  v2 = v - (ones %*% col_means)
+  [U, S, V] = svd(v2)
+  singular_v = diag(S)
+  eigen_v = singular_v^2 / (nrow(v)-1)
+  R = matrix(0, rows=nrow(V), cols=ncol(V))
+  buckets = matrix(1, rows=M, cols=1)
+  bucket_idx = matrix(1, rows=M, cols=1)
+  for(i in 1:M) {
+    bucket_idx[i] = bucket_idx[i] + (i-1) * subvector_size
+  }
+  full_buckets = matrix(0, rows=M, cols=1)
+  for(i in 1:nrow(V)) {
+    smallest_b = order(target=buckets, by=1, decreasing=FALSE, index.return=TRUE)
+    #find empty bucket
+    not_found=TRUE
+    j = 1
+    while(not_found) {
+      if(as.scalar(full_buckets[as.scalar(smallest_b[j])]) == 0) {
+        b = as.scalar(smallest_b[j])
+        not_found = FALSE
+      }
+    j = j + 1
+    }
+    buckets[b] = buckets[b] * eigen_v[i]
+    R[,as.scalar(bucket_idx[b])] = V[,i]
+    bucket_idx[b] = bucket_idx[b] + 1
+    if(as.scalar(bucket_idx[b]) > b * subvector_size) {
+      full_buckets[b] = 1
+    }
+  }
+  v = v %*% t(R)
+}
+
 
 #perform clustering
 print(toString("Starting Clustering with parameters: M=" + M + " subcentroids=" + subcentroids + " sep=TRUE"))
@@ -45,14 +86,6 @@ for(j in 1:M) {
 
 
 query_vectors = read("data/ann/siftsmall_query.csv", format="csv")
-# all = rbind(v, query_vectors)
-# oki = dist(all)
-# test = t(oki[nrow(v)+1, 1:10000])
-# write(test, "data/ann/test.csv")
-# print(toString(test))
-# x = order(target=test, by=1, decreasing=FALSE, index.return=TRUE)
-# write(x, "data/ann/asdf.csv")
-# print(toString(x))
 
 truth_vectors = read("data/ann/siftsmall_truth.csv", format="csv")
 truth_vectors = truth_vectors[1:nrow(truth_vectors), 1]
@@ -60,6 +93,9 @@ retrieved = 0
 
 for(c in 1:100) {
     query_v = query_vectors[c,]
+    if(space_decomp) {
+      query_v = query_v %*% t(R)
+    }
     # query_c = t(codes[query_v,])
     query_c = matrix(0, cols=1, rows=M)
 
