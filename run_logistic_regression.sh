@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CMD="java -Xmx22g -Xms22g -cp ./lib/*:./SystemDS.jar org.apache.sysds.api.DMLScript "
+CMD="java -Xmx10g -Xms10g -cp ./lib/*:./SystemDS.jar org.apache.sysds.api.DMLScript "
 #enable codegeneration
 CONF=" -config dataprep/SystemDS-config.xml"
 
@@ -10,7 +10,7 @@ run_reg() {
   local alg=$1
   if [ "$alg" = "PQ" ]; then
       pq="TRUE"
-      space_decomp="TRUE"
+      space_decomp="FALSE"
   elif [ "$alg" = "PQ-SPACEDECOMP" ]; then
       pq="TRUE"
       space_decomp="TRUE"
