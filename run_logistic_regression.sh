@@ -1,12 +1,12 @@
 #!/bin/bash
 
-CMD="java -Xmx10g -Xms10g -cp ./lib/*:./SystemDS.jar org.apache.sysds.api.DMLScript "
+CMD="java -Xmx12g -Xms12g -cp ./lib/*:./SystemDS.jar org.apache.sysds.api.DMLScript "
 #enable codegeneration
 CONF=" -config dataprep/SystemDS-config.xml"
 
 #sudo -v
 #run the regression tests with perf. results are saved in output/ml and perf_output/ml
-run_reg() {
+run_dml() {
   local alg=$1
   if [ "$alg" = "PQ" ]; then
       pq="TRUE"
@@ -18,55 +18,67 @@ run_reg() {
       pq="FALSE"
       space_decomp="FALSE"
   fi
-
+  if [ "$case" = "clustering" ]; then
+     script="experiments/compute_codes.dml"
+  else 
+     script="experiments/logistic_regression.dml"
+  fi
+#  local script=$2
   file="ml/$alg $dataset $M $subcentroids $sep"
   start=$(date +%s%N)
   #execute dml script with perf
-  sudo perf stat -x \; -o "./perf_output/$file" -d -d -d \
-   $CMD $CONF -f experiments/logistic_regression.dml -exec singlenode -stats \
+  sudo perf stat -x \; -o "./perf_output/$file $case" -d -d -d \
+   $CMD -f $script -exec singlenode -stats \
    -nvargs dataset="$dataset" M=$M subcentroids=$subcentroids pq=$pq sep=$sep out_file="$file" space_decomp=$space_decomp
   end=$(date +%s%N)
   time=$((($end-$start) / 1000000 - 1500))
   #append execution time to output
-  if [ -f "./output/$file" ]; then
-      echo "$alg $dataset M=$M subcentroids=$subcentroids sep=$sep" >> successful_ml_runs.txt
-      sed -i s/$/,"$time"/ "./output/$file"
-  else
-      echo "$alg $dataset M=$M subcentroids=$subcentroids sep=$sep" >> failed_ml_runs.txt
-  fi
+  sed -i "$ a\\$time;ms;time;;;;" "./perf_output/$file $case"
 }
 
 #run the regression tests for different parameters
-execute_runs() {
+execute_pq_runs() {
   local M_list=$1
   local c_list=$2
   local dataset=$3
-  #execute baseline
-  M=0
-  subcentroids=0
-  sep=FALSE
-  run_reg Baseline
   #execute product quantization
   for M in $M_list; do
     for centroids in $c_list; do
       subcentroids=$((centroids / M))
       for sep in FALSE TRUE; do
-        run_reg PQ
-        run_reg PQ-SPACEDECOMP
+        run_dml PQ $case
+        run_dml PQ-SPACEDECOMP $case
       done
     done
   done
+}
+
+execute_baseline_run() {
+  #execute baseline
+  M=0
+  subcentroids=0
+  sep=FALSE
+  run_dml Baseline
 }
 
 #clean the output directory
 rm -f output/ml/*
 rm -f perf_output/ml/*
 
-#clustering with 64 or more centroids causes kmeans to fail because the wcss is 0
-execute_runs "1 2 4" "4 8 16 32 64 128 256" "Adult"
-#execute_runs "1 2 4" "32" "Adult"
-execute_runs "1 2 4 8" "8 16 32 64 128 256" "Covtype"
-execute_runs "1 2 4 8" "8 16 32 64 128 256" "KDD98"
+#execute pq iterations
+for case in "clustering" "regression"; do
+#for case in "clustering"; do
+  execute_pq_runs "1 2 4" "4 8 16 32 64 128 256" "Adult"
+  execute_pq_runs "1 2 4 8" "8 16 32 64 128 256" "Covtype"
+  execute_pq_runs "1 2 4 8" "8 16 32 64 128 256" "KDD98"
+done
+
+execute baseline
+for dataset in "Adult" "Covtype" "KDD98"; do
+#for dataset in "Adult"; do
+  execute_baseline_run
+done
+
 
 
 #remove metadata file to ensure correct parsing of outputs

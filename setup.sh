@@ -10,7 +10,7 @@
 #echo 'export PATH=$SYSTEMDS_ROOT/bin:$PATH' >> ~/.bashrc
 
 #MANUALLY SET SYSTEMDS ENV
-#SYSTEMDS_ROOT="systemds"
+SYSTEMDS_ROOT="$HOME/projects/systemds"
 
 dir=$(pwd)
 cd "$SYSTEMDS_ROOT" || exit

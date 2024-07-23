@@ -1,0 +1,26 @@
+#parameters
+M = $M
+subcentroids = $subcentroids
+dataset = $dataset
+pq = $pq
+sep = $sep
+out_file = "tmp/codes/" + $out_file + ".csv"
+space_decomp = $space_decomp
+
+#read the data
+dir="./data/ml/"
+print(toString(dir + dataset))
+X = read(dir + dataset + "_X.csv")
+y = read(dir + dataset + "_y.csv")
+
+#pad the data if columns are not divisible by M
+if(ncol(X) %% M != 0) {
+  zeros = matrix(0, rows=nrow(X), cols= ((ncol(X) %/% M) +1) * M - ncol(X) )
+  X = cbind(X, zeros)
+}
+subvector_size = ncol(X) / M
+#perform clustering
+print(toString("Starting Clustering with parameters: M=" + M + " subcentroids=" + subcentroids + " sep=TRUE" + " space_decomp=" + space_decomp))
+[codebook, X] = quantizeByCluster(X, M, subcentroids, 1, 100, 1e-4, nrow(X) %/% subcentroids, sep, space_decomp, 2)
+print(toString("Clustering completed."))
+write(X, out_file, format="csv")
