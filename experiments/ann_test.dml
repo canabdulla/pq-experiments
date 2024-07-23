@@ -12,8 +12,6 @@ M = $M
 subcentroids = $subcentroids
 out_file = "output/" + $out_file
 space_decomp = $space_decomp
-# space_decomp = TRUE
-
 
 dataset = "siftsmall_base" #$dataset
 
@@ -32,48 +30,9 @@ if(ncol(v) %% M != 0) {
 }
 subvector_size = ncol(v) / M
 
-#perform space decomposition
-if(space_decomp) {
-  #mittelwertbefreiung
-  col_means = colMeans(v)
-  ones = matrix(1, rows=nrow(v), cols=1)
-  v2 = v - (ones %*% col_means)
-  [U, S, V] = svd(v2)
-  singular_v = diag(S)
-  eigen_v = singular_v^2 / (nrow(v)-1)
-  R = matrix(0, rows=nrow(V), cols=ncol(V))
-  buckets = matrix(1, rows=M, cols=1)
-  bucket_idx = matrix(1, rows=M, cols=1)
-  for(i in 1:M) {
-    bucket_idx[i] = bucket_idx[i] + (i-1) * subvector_size
-  }
-  full_buckets = matrix(0, rows=M, cols=1)
-  for(i in 1:nrow(V)) {
-    smallest_b = order(target=buckets, by=1, decreasing=FALSE, index.return=TRUE)
-    #find empty bucket
-    not_found=TRUE
-    j = 1
-    while(not_found) {
-      if(as.scalar(full_buckets[as.scalar(smallest_b[j])]) == 0) {
-        b = as.scalar(smallest_b[j])
-        not_found = FALSE
-      }
-    j = j + 1
-    }
-    buckets[b] = buckets[b] * eigen_v[i]
-    R[,as.scalar(bucket_idx[b])] = V[,i]
-    bucket_idx[b] = bucket_idx[b] + 1
-    if(as.scalar(bucket_idx[b]) > b * subvector_size) {
-      full_buckets[b] = 1
-    }
-  }
-  v = v %*% t(R)
-}
-
-
 #perform clustering
-print(toString("Starting Clustering with parameters: M=" + M + " subcentroids=" + subcentroids + " sep=TRUE"))
-[codebook, codes] = quantizeByCluster(v, M, subcentroids, 1, 1000, 1e-8, (rows/subcentroids), TRUE, 2)
+print(toString("Starting Clustering with parameters: M=" + M + " subcentroids=" + subcentroids + " sep=TRUE" + " space_decomp=" + space_decomp))
+[codebook, codes, R] = quantizeByCluster(v, M, subcentroids, 1, 1000, 1e-8, (rows/subcentroids), TRUE, space_decomp, 2)
 print(toString("Clustering completed."))
 
 #compute distance matrices and save them in D
