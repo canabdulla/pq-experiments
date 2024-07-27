@@ -1,10 +1,10 @@
 #!/bin/bash
 
-CMD="java -Xmx24g -Xms24g -cp ./lib/*:./SystemDS.jar org.apache.sysds.api.DMLScript "
+CMD="java -Xmx22g -Xms22g -cp ./lib/*:./SystemDS.jar org.apache.sysds.api.DMLScript "
 #enable codegeneration
 CONF=" -config dataprep/SystemDS-config.xml"
 
-sudo -v
+#sudo -v
 
 #run the bs tests with perf. results are saved in output/bs and perf_output/bs
 run_bs() {
@@ -14,19 +14,19 @@ run_bs() {
   else 
       pq="FALSE"
   fi
-  file="bs/$alg $dataset $M $subcentroids $sep"
+  file="$alg $dataset $M $subcentroids $sep"
   #start timer
   start=$(date +%s%N)
   #execute dml script with perf
-  sudo perf stat -x \; -o "./perf_output/$file" -d -d -d \
+  sudo perf stat -x \; -o "./perf_output/bs/$file" -d -d -d \
    $CMD $CONF -f experiments/baseline_sampling_test.dml -exec singlenode -stats \
       -nvargs dataset=$dataset M=$M subcentroids=$subcentroids pq=$pq sep=$sep application=$application out_file="$file"
   #calculate execution time
   end=$(date +%s%N)
   time=$((($end-$start) / 1000000 - 1500))
   #append execution time to output
-  if [ -f "./output/$file" ]; then
-      sed -i s/$/,"$time"/ "./output/$file"
+  if [ -f "./output/bs/$file" ]; then
+      sed -i s/$/,"$time"/ "./output/bs/$file"
   fi
 }
 
@@ -41,6 +41,7 @@ execute_runs() {
       subcentroids=$((centroids / M))
       for sep in FALSE TRUE ; do
         run_bs PQ
+        run_bs PQ-SPACEDECOMP
       done
     done
     subcentroids=0
@@ -51,12 +52,11 @@ execute_runs() {
 }
 
 #clean the output directory
-rm -f output/bs/*
-rm -f perf_output/bs/*
+#rm -f output/bs/*
+#rm -f perf_output/bs/*
 
 application="bs"
 execute_runs "1 2 4 8" "8 16 32 64 128 256" "Covtype"
-#execute_runs "1 2 4 8" "8 16 32 64 128 256" "KDD98"
 
 #remove metadata file to ensure correct parsing of outputs
 rm -f output/bs/*.mtd

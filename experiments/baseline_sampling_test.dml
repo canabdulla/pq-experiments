@@ -1,3 +1,4 @@
+#this method is taken from https://github.com/damslab/reproducibility/blob/master/sigmod2021-sliceline-p218/
 oneHotEncode = function(Matrix [Double] X)
     return (Matrix[Double] Y) {
     m = nrow(X)
@@ -10,43 +11,39 @@ oneHotEncode = function(Matrix [Double] X)
     Y = table(rix, cix); #one-hot encoded
 }
 
-# X = read("data/ml/Adult_X.csv")
-# y = read("data/ml/Adult_y.csv")
-
-X = read("data/ml/Covtype_X.csv")
-y = read("data/ml/Covtype_y.csv")
-
 M = $M
 pq = $pq
 subcentroids = $subcentroids
 sep = $sep
-out_file = "output/" +  $out_file
+out_file = $out_file
+dataset = $dataset
+
+#read the data
+dir="./data/ml/"
+y = read(dir + dataset + "_y.csv")
+print(toString(y))
 
 if(pq) {
-  #pad the data if columns are not divisible by M
-  if(ncol(X) %% M != 0) {
-      zeros = matrix(0, rows=nrow(X), cols= ((ncol(X) %/% M) +1) * M - ncol(X) )
-      X = cbind(X, zeros)
-  }
-  #perform clustering
-  print(toString("Starting Clustering with parameters: M=" + M + " subcentroids=" + subcentroids + " sep=" + sep))
-  [codebook, X] = quantizeByCluster(X, M, subcentroids, 1, 100, 1e-5, nrow(X) %/% subcentroids, sep, 2)
-  print(toString("Clustering completed."))
+#     print("tmp/codes/ml/" + out_file + " clustering.csv")
+    X = read("tmp/codes/ml/" + out_file + " clustering.csv")
 }
+else {
+    X = read(dir + dataset + "_X.csv")
+}
+# X = matrix(1, cols=1, rows=1)
 
 X = oneHotEncode(X)
 
 if(!pq) {
-    [Xtrain, Xtest, ytrain, ytest] = split(X=X, Y=y, f=0.7, cont=FALSE, seed=2)
-    sfi = M / 54
-    print("Baseline uniform sampling with f="+sfi+", nrow="+round(nrow(X)*sfi))
-    [Xtrain2,Xtest2,ytrain2,ytest2] = split(X=X,Y=y,f=sfi,cont=FALSE,seed=7)
+    [Xtrain, Xtest, ytrain, ytest] = split(X=X, Y=y, f=0.8, cont=FALSE, seed=2)
+    scaling_factor = M / 54
+    [Xtrain2,Xtest2,ytrain2,ytest2] = split(X=X,Y=y,f=scaling_factor,cont=FALSE,seed=2)
     B = multiLogReg(X=Xtrain2, Y=ytrain2, maxii=50, icpt=2, reg=0.001, verbose=FALSE)
     [Matrix,yhat,train_acc] = multiLogRegPredict(X=Xtrain2, B=B, Y=ytrain2, verbose=FALSE)
     [Matrix,yhat,test_acc] = multiLogRegPredict(X=Xtest, B=B, Y=ytest, verbose=FALSE)
 }
 else {
-   [Xtrain2, Xtest, ytrain2, ytest] = split(X=X, Y=y, f=0.7, cont=FALSE, seed=2)
+   [Xtrain2, Xtest, ytrain2, ytest] = split(X=X, Y=y, f=0.8, cont=FALSE, seed=2)
    B = multiLogReg(X=Xtrain2, Y=ytrain2, maxii=50, icpt=2, reg=0.001, verbose=FALSE)
    [Matrix,yhat,train_acc] = multiLogRegPredict(X=Xtrain2, B=B, Y=ytrain2, verbose=FALSE)
    [Matrix,yhat,test_acc] = multiLogRegPredict(X=Xtest, B=B, Y=ytest, verbose=FALSE)
