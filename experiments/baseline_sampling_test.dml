@@ -21,7 +21,6 @@ dataset = $dataset
 #read the data
 dir="./data/ml/"
 y = read(dir + dataset + "_y.csv")
-print(toString(y))
 
 if(pq) {
 #     print("tmp/codes/ml/" + out_file + " clustering.csv")

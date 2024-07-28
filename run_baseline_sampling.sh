@@ -19,15 +19,14 @@ run_bs() {
   start=$(date +%s%N)
   #execute dml script with perf
   sudo perf stat -x \; -o "./perf_output/bs/$file" -d -d -d \
-   $CMD $CONF -f experiments/baseline_sampling_test.dml -exec singlenode -stats \
+   $CMD -f experiments/baseline_sampling_test.dml -exec singlenode -stats \
       -nvargs dataset=$dataset M=$M subcentroids=$subcentroids pq=$pq sep=$sep application=$application out_file="$file"
   #calculate execution time
   end=$(date +%s%N)
   time=$((($end-$start) / 1000000 - 1500))
   #append execution time to output
-  if [ -f "./output/bs/$file" ]; then
-      sed -i s/$/,"$time"/ "./output/bs/$file"
-  fi
+  #append execution time to output
+  sed -i "$ a\\$time;ms;time;;;;" "./perf_output/bs/$file"
 }
 
 #run the bs tests for different parameters
@@ -37,6 +36,10 @@ execute_runs() {
   dataset=$3
   #run product quantization
   for M in $M_list; do
+    subcentroids=0
+    centroids=0
+    sep=FALSE
+    run_bs BASELINE_SAMPLING
     for centroids in $c_list; do
       subcentroids=$((centroids / M))
       for sep in FALSE TRUE ; do
@@ -44,10 +47,6 @@ execute_runs() {
         run_bs PQ-SPACEDECOMP
       done
     done
-    subcentroids=0
-    centroids=0
-    sep=FALSE
-    run_bs BASELINE_SAMPLING
   done
 }
 
