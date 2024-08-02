@@ -9,10 +9,10 @@ CONF=" -config dataprep/SystemDS-config.xml"
 #run the bs tests with perf. results are saved in output/bs and perf_output/bs
 run_bs() {
   local alg=${1}
-  if [ "$alg" = "PQ" ]; then
-      pq="TRUE"
-  else 
+  if [ "$alg" = "BASELINE_SAMPLING" ]; then
       pq="FALSE"
+  else 
+      pq="TRUE"
   fi
   file="$alg $dataset $M $subcentroids $sep"
   #start timer
@@ -51,11 +51,11 @@ execute_runs() {
 }
 
 #clean the output directory
-#rm -f output/bs/*
-#rm -f perf_output/bs/*
+rm -f output/bs/*
+rm -f perf_output/bs/*
 
 application="bs"
-execute_runs "1 2 4 8" "8 16 32 64 128 256" "Covtype"
+execute_runs "1 2 4" "8 16 32 64 128 256" "Adult"
 
 #remove metadata file to ensure correct parsing of outputs
 rm -f output/bs/*.mtd

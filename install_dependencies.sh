@@ -3,6 +3,7 @@
 mkdir -p data;
 chmod 755 data;
 
+mkdir -p ./tmp/codes
 mkdir -p ./data/ann
 mkdir -p ./data/ml
 
@@ -22,6 +23,7 @@ mkdir -p ./plots/distortion/line/perf
 mkdir -p ./plots/distortion/bar/perf
 mkdir -p ./plots/ml/bar/perf
 mkdir -p ./plots/ml/line/perf
+mkdir -p ./plots/ml/comp/perf
 mkdir -p ./plots/ann/line/perf
 mkdir -p ./plots/ann/bar/perf
 mkdir -p ./plots/bs/line/perf

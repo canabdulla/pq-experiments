@@ -1,7 +1,7 @@
 #!/bin/bash
 calc_dist=TRUE
 
-CMD="java -Xmx24g -Xms24g -cp ./lib/*:./SystemDS.jar org.apache.sysds.api.DMLScript "
+CMD="java -Xmx22g -Xms22g -cp ./lib/*:./SystemDS.jar org.apache.sysds.api.DMLScript "
 #enable codegeneration
 CONF=" -config dataprep/SystemDS-config.xml" #just for faster training (~7x)
 
@@ -18,7 +18,7 @@ run_distortion() {
   start=$(date +%s%N)
   #execute dml script with perf
   sudo perf stat -x \; -o "./perf_output/$file" -d -d -d \
-   $CMD $CONF -f experiments/distortion_test.dml -exec singlenode -stats \
+   $CMD -f experiments/distortion_test.dml -exec singlenode -stats \
       -nvargs dataset=$dataset M=$M calc_dist=$calc_dist subcentroids=$subcentroids pq=$pq sep=$sep application=$application out_file="$file"
   #calculate execution time
   end=$(date +%s%N)
@@ -58,8 +58,8 @@ execute_runs() {
 rm -f output/distortion/*
 rm -f perf_output/distortion/*
 
-#application="ann"
-#execute_runs "1 2 4 8" "8 16 32 64 128 256" "sift_base_100k"
+application="ann"
+execute_runs "1 2 4 8" "8 16 32 64 128 256" "sift_base_100k"
 
 application="ml"
 execute_runs "1 2 4" "4 8 16 32 64 128 256" "Adult"

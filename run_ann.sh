@@ -12,12 +12,11 @@ run_ann() {
       space_decomp="TRUE"
   fi
   file="ann/$alg $dataset $M $subcentroids TRUE"
-#  file="ann/PQ $dataset $M $subcentroids TRUE"
   #start timer
   start=$(date +%s%N)
   #execute dml script with perf
   sudo perf stat -x \; -o "./perf_output/$file" -d -d -d \
-   $CMD $CONF -f experiments/ann_test.dml -exec singlenode -stats \
+  $CMD -f experiments/ann_test.dml -exec singlenode -stats \
       -nvargs M=$M subcentroids=$subcentroids  out_file="$file" space_decomp=$space_decomp
   #calculate execution time
   end=$(date +%s%N)

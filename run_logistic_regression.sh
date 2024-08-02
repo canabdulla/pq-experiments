@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CMD="java -Xmx12g -Xms12g -cp ./lib/*:./SystemDS.jar org.apache.sysds.api.DMLScript "
+CMD="java -Xmx22g -Xms22g -cp ./lib/*:./SystemDS.jar org.apache.sysds.api.DMLScript "
 #enable codegeneration
 CONF=" -config dataprep/SystemDS-config.xml"
 
@@ -67,15 +67,14 @@ rm -f perf_output/ml/*
 
 #execute pq iterations
 for case in "clustering" "regression"; do
-#for case in "clustering"; do
   execute_pq_runs "1 2 4" "4 8 16 32 64 128 256" "Adult"
   execute_pq_runs "1 2 4 8" "8 16 32 64 128 256" "Covtype"
   execute_pq_runs "1 2 4 8" "8 16 32 64 128 256" "KDD98"
 done
 
-execute baseline
+#execute baseline
+case=regression
 for dataset in "Adult" "Covtype" "KDD98"; do
-#for dataset in "Adult"; do
   execute_baseline_run
 done
 
