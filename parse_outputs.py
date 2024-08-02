@@ -10,7 +10,7 @@ import cpuinfo
 
 def save_csv(data, dest):
     df = pd.DataFrame(data,
-                      columns=["algorithm", "dataset", "M", "subcentroids", "separate", 'metric', 'value'])
+                      columns=["algorithm", "dataset", "M", "subcentroids", "separate", "type", 'metric', 'value'])
     df["date"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     processor = cpuinfo.get_cpu_info()["brand_raw"]
     df["processor"] = processor
@@ -31,6 +31,8 @@ def parse_perf_output(output_dir):
                     try:
                         value = float(value)
                         testcase = os.path.splitext(filename)[0].split()
+                        if len(testcase) < 6:
+                            testcase.append("clustering")
                         testcase.append(metric)
                         testcase.append(value)
                         data.append(testcase)
@@ -45,6 +47,8 @@ def parse_output(output_dir, metrics):
         val = np.loadtxt(open(os.path.join(output_dir, filename), "rb"), delimiter=",")
         for i in range(len(val)):
             testcase = os.path.splitext(filename)[0].split()
+            if len(testcase) < 6:
+                testcase.append("clustering")
             testcase.append(metrics[i])
             testcase.append(val[i])
             data.append(testcase)
@@ -56,7 +60,7 @@ def parse_ml_output(output_dir):
     for filename in os.listdir(output_dir):
         dataset = filename.split(' ')[1]
         if dataset == 'KDD98':
-            metrics = ["train-mse", "train-rsq", "test-mse", "test-rsq", "ms"]
+            metrics = ["train-mse", "train-rsq", "test-mse", "test-rsq"]
         else:
             if dataset == 'Adult':
                 metrics = ["accuracy", "precision", "recall", "f1"]
@@ -64,21 +68,24 @@ def parse_ml_output(output_dir):
                 metrics = ["accuracy", "avg-precision", "avg-recall", "macro-f1"]
             m = [f"train-{i}" for i in metrics]
             m2 = [f"test-{i}" for i in metrics]
-            metrics = m + m2 + ["ms"]
+            metrics = m + m2
         val = np.loadtxt(open(os.path.join(output_dir, filename), "rb"), delimiter=",")
         for i in range(len(val)):
             testcase = os.path.splitext(filename)[0].split()
+            if len(testcase) < 6:
+                testcase.append("clustering")
             testcase.append(metrics[i])
             testcase.append(val[i])
             data.append(testcase)
     return data
 
 
+# Save the output of the different experiments in a single file.
 def main():
     if len(sys.argv) < 2:
         print("Usage: parse_outputs.py <test_case>")
         return
-    if sys.argv[1] == "dist":
+    if sys.argv[1] == "distortion":
         data = parse_output("output/distortion", ["distortion", "ms"])
         perf_data = parse_perf_output("perf_output/distortion")
         data.extend(perf_data)
@@ -94,7 +101,7 @@ def main():
         data.extend(perf_data)
         save_csv(data, "./results/ann.csv")
     elif sys.argv[1] == "bs":
-        data = parse_output("output/bs", ["train-accuracy", "test-accuracy", "ms"])
+        data = parse_output("output/bs", ["train-accuracy", "test-accuracy"])
         perf_data = parse_perf_output("perf_output/bs")
         data.extend(perf_data)
         save_csv(data, "./results/bs.csv")
