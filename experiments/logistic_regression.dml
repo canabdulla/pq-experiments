@@ -74,7 +74,7 @@ print(toString(dir + dataset))
 y = read(dir + dataset + "_y.csv")
 
 if(pq) {
-    X = read("tmp/codes/" + out_file + " clustering.csv")
+    X = read("tmp/codes/" + out_file + ".csv")
 }
 else {
     X = read(dir + dataset + "_X.csv")
